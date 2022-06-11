@@ -59,7 +59,7 @@ async def send_welcome(message: types.Message):
     await message.reply('Привет! Это бот для проверки новостей, '
                         'сделанный для хакатона MoscowCityHack командой NorthShine.\n'
                         'Вставьте ссылку на новость или текст новости.'
-                        'Поиск может занять некоторое время', reply_markup=menu_keyboard)
+                        ' Поиск может занять некоторое время', reply_markup=menu_keyboard)
 
 
 @dp.message_handler(commands=['url'])
