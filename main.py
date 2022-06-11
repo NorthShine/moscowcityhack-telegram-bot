@@ -89,7 +89,11 @@ async def search_by_url(message: types.Message, state: FSMContext):
         if data.get('is_article') is False:
             await message.answer('Внимание: похоже вы указали ссылку не на статью, результаты могут быть некорректны')
 
-        await message.answer(collect_data(data), reply_markup=menu_keyboard)
+        await message.answer(
+            collect_data(data),
+            reply_markup=menu_keyboard,
+            disable_web_page_preview=True,
+        )
     else:
         await message.answer('Ошибка: вы ввели некорректную ссылку', reply_markup=menu_keyboard)
 
@@ -138,7 +142,11 @@ async def process_title(message: types.Message, state: FSMContext):
         timeout=10000,
     )
     data = response.json()['data']
-    await message.answer(collect_data(data), reply_markup=menu_keyboard)
+    await message.answer(
+        collect_data(data),
+        reply_markup=menu_keyboard,
+        disable_web_page_preview=True,
+    )
 
 
 if __name__ == '__main__':
