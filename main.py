@@ -25,18 +25,19 @@ async def send_welcome(message: types.Message):
 @dp.message_handler()
 async def search(message: types.Message):
     if validators.url(message.text):
+        await message.answer("Подтверждение может занять некоторое время.")
         response = await client.post(
             config['SEARCH_BY_URL'],
             json={'url': message.text},
             timeout=10000,
         )
-        data = (response.json())['data']
-        is_trusted_url = data['is_trusted_url']
-        is_real_author = data['is_real_author']
-        is_real_article = data['is_real_article']
-        article_url = data['article_url']
-        author = data['author']
-        title = data['title']
+        data = response.json()['data']
+        is_trusted_url = data.get('is_trusted_url')
+        is_real_author = data.get('is_real_author')
+        is_real_article = data.get('is_real_article')
+        article_url = data.get('article_url', "Ссылка на статью не найдена")
+        author = data.get('author', "No author found")
+        title = data.get('title')
         await message.answer(f'Это доверенный сайт: {is_trusted_url}\n'
                              f'Это реальный автор: {is_real_author}\n'
                              f'Это реально существующая статья: {is_real_article}\n'
