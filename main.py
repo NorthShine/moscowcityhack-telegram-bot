@@ -1,6 +1,6 @@
 import logging
 
-from aiogram import Bot, Dispatcher, executor, types
+from aiogram import Bot, Dispatcher, executor, types, filters
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types.reply_keyboard import ReplyKeyboardMarkup, KeyboardButton
@@ -18,9 +18,9 @@ dp = Dispatcher(bot)
 client = AsyncClient()
 
 author_keyboard = ReplyKeyboardMarkup()
-author_keyboard.add(KeyboardButton('Я не знаю автора текста'))
+author_keyboard.add(KeyboardButton('/author Я не знаю автора текста'))
 title_keyboard = ReplyKeyboardMarkup()
-title_keyboard.add(KeyboardButton('Я не знаю заголовок статьи'))
+title_keyboard.add(KeyboardButton('/title Я не знаю заголовок статьи'))
 
 
 class TextRequest(StatesGroup):
@@ -49,13 +49,14 @@ def collect_data(data):
 async def send_welcome(message: types.Message):
     await message.reply('Привет! Это бот для проверки новостей, '
                         'сделанный для хакатона MoscowCityHack командой NorthShine.\n'
-                        'Вставьте ссылку на новость или текст новости. Поиск может занять некоторое время')
+                        'Вставьте ссылку на новость после /url или текст новости после /text. '
+                        'Поиск может занять некоторое время')
 
 
-@dp.message_handler()
-async def search(message: types.Message):
+@dp.message_handler(filters.Text(contains='/url'))
+async def search_by_url(message: types.Message):
     if validators.url(message.text):
-        await message.answer("Подтверждение может занять некоторое время")
+        await message.answer('Подтверждение может занять некоторое время')
         response = await client.post(
             config['SEARCH_BY_URL'],
             json={'url': message.text},
@@ -68,28 +69,33 @@ async def search(message: types.Message):
 
         await message.answer(collect_data(data))
     else:
-        await TextRequest.text.set()
-        await message.answer('Напишите имя автора текста', reply_markup=author_keyboard)
+        await message.answer('Ошибка: вы ввели некорректную ссылку')
 
 
-@dp.message_handler(state=TextRequest.author)
+@dp.message_handler(filters.Text(contains='/text'), state=TextRequest.text)
+async def search_by_text(message: types.Message):
+    await TextRequest.text.set()
+    await message.answer('Напишите имя автора текста после /author', reply_markup=author_keyboard)
+
+
+@dp.message_handler(filters.Text(contains='/author'), state=TextRequest.author)
 async def process_author(message: types.Message, state: FSMContext):
-    if message.text == 'Я не знаю автора текста':
+    if message.text == '/author Я не знаю автора текста':
         await state.update_data(author='')
     else:
         await state.update_data(author=message.text)
     await TextRequest.next()
-    await message.answer('Напишите заголовок статьи', reply_markup=title_keyboard)
+    await message.answer('Напишите заголовок статьи после /title', reply_markup=title_keyboard)
 
 
-@dp.message_handler(state=TextRequest.title)
+@dp.message_handler(filters.Text(contains='/title'), state=TextRequest.title)
 async def process_title(message: types.Message, state: FSMContext):
-    if message.text == 'Я не знаю заголовок статьи':
+    if message.text == '/title Я не знаю заголовок статьи':
         await state.update_data(title='')
     else:
         await state.update_data(title=message.text)
     await state.finish()
-    await message.answer("Подтверждение может занять некоторое время")
+    await message.answer('Подтверждение может занять некоторое время')
 
     async with state.proxy() as data:
         text = data['text']
@@ -107,6 +113,11 @@ async def process_title(message: types.Message, state: FSMContext):
     )
     data = response.json()['data']
     await message.answer(collect_data(data))
+
+
+@dp.message_handler()
+async def default(message: types.Message):
+    await message.answer('Нет такой команды. Список доступных команд можно узнать с помощью /help')
 
 
 if __name__ == '__main__':
