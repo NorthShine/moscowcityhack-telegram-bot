@@ -55,11 +55,12 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(filters.Text(contains='/url'))
 async def search_by_url(message: types.Message):
-    if validators.url(message.text):
+    text = message.text.replace('/url', '')
+    if validators.url(text):
         await message.answer('Подтверждение может занять некоторое время')
         response = await client.post(
             config['SEARCH_BY_URL'],
-            json={'url': message.text},
+            json={'url': text},
             timeout=10000,
         )
         data = response.json()['data']
@@ -73,27 +74,31 @@ async def search_by_url(message: types.Message):
 
 
 @dp.message_handler(filters.Text(contains='/text'), state=TextRequest.text)
-async def search_by_text(message: types.Message):
+async def search_by_text(message: types.Message, state: FSMContext):
+    text = message.text.replace('/text', '')
     await TextRequest.text.set()
+    await state.update_data(text=text)
     await message.answer('Напишите имя автора текста после /author', reply_markup=author_keyboard)
 
 
 @dp.message_handler(filters.Text(contains='/author'), state=TextRequest.author)
 async def process_author(message: types.Message, state: FSMContext):
-    if message.text == '/author Я не знаю автора текста':
+    text = message.text.replace('/author', '')
+    if text == '/author Я не знаю автора текста':
         await state.update_data(author='')
     else:
-        await state.update_data(author=message.text)
+        await state.update_data(author=text)
     await TextRequest.next()
     await message.answer('Напишите заголовок статьи после /title', reply_markup=title_keyboard)
 
 
 @dp.message_handler(filters.Text(contains='/title'), state=TextRequest.title)
 async def process_title(message: types.Message, state: FSMContext):
-    if message.text == '/title Я не знаю заголовок статьи':
+    text = message.text.replace('/title', '')
+    if text == '/title Я не знаю заголовок статьи':
         await state.update_data(title='')
     else:
-        await state.update_data(title=message.text)
+        await state.update_data(title=text)
     await state.finish()
     await message.answer('Подтверждение может занять некоторое время')
 
