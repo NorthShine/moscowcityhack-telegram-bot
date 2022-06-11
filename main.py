@@ -27,10 +27,10 @@ async def search(message: types.Message):
     if validators.url(message.text):
         response = await client.post(
             config['SEARCH_BY_URL'],
-            data={'url': message.text},
+            json={'url': message.text},
             timeout=10000,
         )
-        data = response.json()
+        data = (response.json())['data']
         is_trusted_url = data['is_trusted_url']
         is_real_author = data['is_real_author']
         is_real_article = data['is_real_article']
