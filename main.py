@@ -44,8 +44,10 @@ def collect_data(data):
     is_trusted_url = data.get('is_trusted_url')
     articles_urls = str(data.get('found_articles', 'Ссылка на статью не найдена'))
 
-    return f'Это правда с вероятностью: {truth_percentage}' \
-           f'Коэффициент уникальности текста: {uniqueness_hits}' \
+    is_trusted_url = 'Да' if is_trusted_url else 'Нет'
+
+    return f'Это правда с вероятностью: {truth_percentage}\n' \
+           f'Коэффициент уникальности текста: {uniqueness_hits}\n' \
            f'Информация есть на доверенных сайтах: {is_trusted_url}\n' \
            f'Найденные релевантные ссылки: {articles_urls}\n' \
 
