@@ -42,14 +42,18 @@ def collect_data(data):
     truth_percentage = data.get('truth_percentage')
     uniqueness_hits = data.get('uniqueness_hits')
     is_trusted_url = data.get('is_trusted_url')
-    articles_urls = str(data.get('found_articles', 'Ссылка на статью не найдена'))
+    articles_urls = data.get('found_articles', 'Ссылка на статью не найдена')
 
     is_trusted_url = 'Да' if is_trusted_url else 'Нет'
+    articles_urls_str = ''
+    for url in articles_urls:
+        articles_urls_str += '- ' + url + '\n'
 
-    return f'Это правда с вероятностью: {truth_percentage}\n' \
-           f'Коэффициент уникальности текста: {uniqueness_hits}\n' \
+    return f'Это правда с вероятностью: {truth_percentage}%\n' \
+           f'Коэффициент уникальности текста: {uniqueness_hits}%\n' \
            f'Информация есть на доверенных сайтах: {is_trusted_url}\n' \
-           f'Найденные релевантные ссылки: {articles_urls}\n' \
+           f'Найденные релевантные ссылки:\n\n{articles_urls_str}' \
+
 
 
 @dp.message_handler(commands=['start', 'help'])
