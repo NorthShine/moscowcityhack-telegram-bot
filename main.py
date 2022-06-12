@@ -39,19 +39,15 @@ class TextForm(StatesGroup):
 
 
 def collect_data(data):
+    truth_percentage = data.get('truth_percentage')
+    uniqueness_hits = data.get('uniqueness_hits')
     is_trusted_url = data.get('is_trusted_url')
-    is_real_author = data.get('is_real_author')
-    is_real_article = data.get('is_real_article')
     articles_urls = str(data.get('found_articles', 'Ссылка на статью не найдена'))
-    found_authors = str(data.get('found_authors', 'Автор не найден'))
-    found_titles = str(data.get('found_titles', 'Заголовок не найден'))
 
-    return f'Это доверенный сайт: {is_trusted_url}\n' \
-           f'Это реальный автор: {is_real_author}\n' \
-           f'Это реально существующая статья: {is_real_article}\n' \
-           f'Найденные ссылки: {articles_urls}\n' \
-           f'Найденные авторы: {found_authors}\n' \
-           f'Найденные заголовки: {found_titles}'
+    return f'Это правда с вероятностью: {truth_percentage}' \
+           f'Коэффициент уникальности текста: {uniqueness_hits}' \
+           f'Информация есть на доверенных сайтах: {is_trusted_url}\n' \
+           f'Найденные релевантные ссылки: {articles_urls}\n' \
 
 
 @dp.message_handler(commands=['start', 'help'])
